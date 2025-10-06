@@ -1,0 +1,86 @@
+CreateBookRequest:
+  type: object
+  required:
+    - name
+    - price
+  properties:
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: Book name
+      example: "Clean Architecture"
+    price:
+      type: number
+      format: float
+      description: Book price
+      example: 499.99
+
+UpdateBookRequest:
+  type: object
+  required:
+    - name
+    - price
+  properties:
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: Book name
+      example: "Clean Architecture - Updated"
+    price:
+      type: number
+      format: float
+      description: Book price
+      example: 549.99
+
+BookResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique book identifier
+      example: "123e4567-e89b-12d3-a456-426614174000"
+    name:
+      type: string
+      description: Book name
+      example: "Clean Architecture"
+    price:
+      type: number
+      format: float
+      description: Book price
+      example: 499.99
+
+ListBooksResponse:
+  type: object
+  properties:
+    books:
+      type: array
+      items:
+        $ref: '#/BookResponse'
+      description: List of books
+    total_count:
+      type: integer
+      description: Total number of books matching the criteria
+      example: 42
+    limit:
+      type: integer
+      description: Number of records returned
+      example: 20
+    offset:
+      type: integer
+      description: Number of records skipped
+      example: 0
+
+ErrorResponse:
+  type: object
+  properties:
+    error:
+      type: string
+      description: Error message
+      example: "An error occurred"
+    message:
+      type: string
+      description: Detailed error message
+      example: "Invalid input parameters"

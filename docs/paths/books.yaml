@@ -1,0 +1,195 @@
+create:
+  post:
+    tags:
+      - Books
+    summary: Create a new book
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/books.yaml#/CreateBookRequest'
+    responses:
+      '201':
+        description: Book created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/books.yaml#/BookResponse'
+      '400':
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+
+update:
+  put:
+    tags:
+      - Books
+    summary: Update an existing book
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Book ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/books.yaml#/UpdateBookRequest'
+    responses:
+      '200':
+        description: Book updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/books.yaml#/BookResponse'
+      '400':
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '404':
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+
+delete:
+  delete:
+    tags:
+      - Books
+    summary: Delete a book
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Book ID
+    responses:
+      '200':
+        description: Book deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Book deleted successfully
+      '400':
+        description: Invalid book ID
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '404':
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+
+getbyid:
+  get:
+    tags:
+      - Books
+    summary: Get book by ID
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Book ID
+    responses:
+      '200':
+        description: Book found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/books.yaml#/BookResponse'
+      '400':
+        description: Bad request - invalid ID
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'
+      '404':
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/books.yaml#/ErrorResponse'

@@ -1,0 +1,1499 @@
+openapi: 3.0.0
+info:
+  title: Book service
+  version: 1.0.0
+  description: API documentation for the book Service
+servers:  
+  - url: 'http://localhost:8085/v1/book-service'
+    description: Local development server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication. Include 'Bearer ' prefix followed by the token.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: An error occurred
+        message:
+          type: string
+          description: Detailed error message
+          example: Invalid input parameters
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+paths:
+  '/roles/getbyid/{roleID}':
+    get:
+      summary: Retrieve a role by ID
+      description: Fetch role details by role ID.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Role ID (UUID)
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1create/post/responses/201/content/application~1json/schema'
+        '400':
+          description: Invalid role ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  '/roles/update/{roleID}':
+    put:
+      summary: Update a role's details
+      description: Modify existing role details by role ID.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Role ID (UUID)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  description: Display name of the role
+                  example: Administrator
+                role_type:
+                  type: string
+                  enum:
+                    - admin
+                    - manager
+                    - agent
+                    - interview
+                    - student
+                    - read
+                  description: Predefined role type identifier
+                  example: admin
+                description:
+                  type: string
+                  description: Description of the role
+                  example: Full system administrator with all permissions
+                scope:
+                  type: string
+                  enum:
+                    - global
+                    - tenant
+                    - superadmin
+                  description: Scope of the role (global or tenant-specific)
+                  example: global
+                is_active:
+                  type: boolean
+                  description: Whether the role is active
+                  example: true
+              required:
+                - role_name
+                - role_type
+                - scope
+                - is_active
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1create/post/responses/201/content/application~1json/schema'
+        '400':
+          description: Invalid input or role ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  '/roles/togglestatus/{roleID}':
+    patch:
+      summary: Toggle role status (activate/deactivate)
+      description: Activate or deactivate a role by setting its is_active status. This is a soft operation that preserves the role data.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: roleID
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Role ID (UUID)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_active:
+                  type: boolean
+                  description: 'Set to true to activate, false to deactivate. Defaults to false (deactivate) if not provided.'
+                  example: false
+      responses:
+        '200':
+          description: Role status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Role deactivated successfully
+                  is_active:
+                    type: boolean
+                    example: false
+        '400':
+          description: Invalid role ID format or role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  '/roles/getbyslug/{slug}':
+    get:
+      summary: Retrieve a role by slug
+      description: Fetch role details by role slug.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 'Role slug (e.g., ''admin'', ''user'')'
+      responses:
+        '200':
+          description: Role details
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1create/post/responses/201/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  /roles/getscopes:
+    get:
+      summary: Get available role scopes
+      description: Retrieve a list of available role scopes with their descriptions.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of available scopes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scopes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                          description: The scope value (used in API requests)
+                          example: global
+                        label:
+                          type: string
+                          description: Human-readable label for the scope
+                          example: Global
+                        description:
+                          type: string
+                          description: Detailed description of the scope
+                          example: Role applies across the entire system
+                      required:
+                        - value
+                        - label
+                        - description
+                    description: List of available scopes
+                required:
+                  - scopes
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '500':
+          description: Server error while fetching scopes
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  /roles/getall:
+    get:
+      summary: Retrieve all roles
+      description: Fetch a list of all roles with optional filtering and pagination.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_active
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Filter by active status
+        - name: scope
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - global
+              - tenant
+              - superadmin
+          description: Filter by scope (global or tenant)
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 'Search in role name, slug, or description'
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+          description: Number of roles to return per page
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Number of roles to skip
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roles:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1roles~1create/post/responses/201/content/application~1json/schema'
+                    description: List of roles
+                  total_count:
+                    type: integer
+                    description: Total number of roles matching the filters
+                    example: 25
+                  limit:
+                    type: integer
+                    description: Number of roles returned per page
+                    example: 50
+                  offset:
+                    type: integer
+                    description: Number of roles skipped
+                    example: 0
+                required:
+                  - roles
+                  - limit
+                  - offset
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+                  message:
+                    type: string
+                    example: An error occurred
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  details:
+                    type: object
+                    description: Additional error details
+                required:
+                  - status
+                  - message
+        '500':
+          description: Server error while fetching roles
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  /roles/create:
+    post:
+      summary: Create a new role
+      description: Add a new role to the database.
+      tags:
+        - Roles
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                  description: Display name of the role
+                  example: Administrator
+                role_type:
+                  type: string
+                  enum:
+                    - admin
+                    - manager
+                    - agent
+                    - interview
+                    - student
+                    - read
+                  description: Predefined role type identifier
+                  example: admin
+                description:
+                  type: string
+                  description: Description of the role
+                  example: Full system administrator with all permissions
+                scope:
+                  type: string
+                  enum:
+                    - global
+                    - tenant
+                    - superadmin
+                  description: Scope of the role (global or tenant-specific)
+                  example: global
+              required:
+                - role_name
+                - role_type
+                - scope
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role_id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the role
+                    example: 123e4567-e89b-12d3-a456-426614174000
+                  role_name:
+                    type: string
+                    minLength: 2
+                    maxLength: 100
+                    description: Display name of the role
+                    example: Administrator
+                  role_type:
+                    type: string
+                    enum:
+                      - admin
+                      - manager
+                      - agent
+                      - interview
+                      - student
+                      - read
+                    description: Predefined role type identifier
+                    example: admin
+                  description:
+                    type: string
+                    description: Description of the role
+                    example: Full system administrator with all permissions
+                  scope:
+                    type: string
+                    enum:
+                      - global
+                      - tenant
+                      - superadmin
+                    description: Scope of the role (global or tenant-specific)
+                    example: global
+                  is_active:
+                    type: boolean
+                    description: Whether the role is active
+                    example: true
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: When the role was created
+                    example: '2024-01-15T10:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: When the role was last updated
+                    example: '2024-01-15T10:30:00Z'
+                required:
+                  - role_id
+                  - role_name
+                  - role_type
+                  - scope
+                  - is_active
+                  - created_at
+                  - updated_at
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+        '409':
+          description: Role with slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1roles~1getall/get/responses/401/content/application~1json/schema'
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticates user and returns access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username_or_email
+                - password
+              properties:
+                username_or_email:
+                  type: string
+                  description: Username or email address for login
+                  example: johndoe
+                password:
+                  type: string
+                  description: User's password
+                  example: securepassword123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                        format: uuid
+                        description: Unique user identifier
+                        example: 550e8400-e29b-41d4-a716-446655440000
+                      full_name:
+                        type: string
+                        description: User's full name
+                        example: John Doe
+                      email:
+                        type: string
+                        format: email
+                        description: User's email address
+                        example: john.doe@example.com
+                      username:
+                        type: string
+                        description: User's username
+                        example: johndoe
+                      role_slug:
+                        type: string
+                        description: Role slug for the user
+                        example: admin
+                      is_active:
+                        type: boolean
+                        description: Whether the user account is active
+                        example: true
+                      created_at:
+                        type: string
+                        format: date-time
+                        description: User creation timestamp
+                        example: '2024-01-01T00:00:00Z'
+                  access_token:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refresh_token:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: integer
+                    description: Access token expiration time in seconds
+                    example: 1800
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Response status
+                    example: error
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid request data
+                  data:
+                    type: null
+                    description: No data for error responses
+                    example: null
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Uses refresh token to get new access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: Refresh token to exchange for new tokens
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refresh_token:
+                    type: string
+                    description: JWT refresh token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: integer
+                    description: Access token expiration time in seconds
+                    example: 1800
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Revokes refresh token to log out user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: Refresh token to revoke
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Logout confirmation message
+                    example: Successfully logged out
+  '/auth/tokens/{userid}':
+    get:
+      tags:
+        - Token Management
+      summary: Get active tokens for user
+      description: Retrieves all active access and refresh tokens for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Active tokens retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        token_type:
+                          type: string
+                          enum:
+                            - access
+                            - refresh
+                          description: Type of token
+                          example: access
+                        token_id:
+                          type: string
+                          format: uuid
+                          description: Token identifier
+                          example: 550e8400-e29b-41d4-a716-446655440000
+                        expires_at:
+                          type: string
+                          format: date-time
+                          description: Token expiration timestamp
+                          example: '2024-01-01T00:30:00Z'
+                        created_at:
+                          type: string
+                          format: date-time
+                          description: Token creation timestamp
+                          example: '2024-01-01T00:00:00Z'
+                    description: List of active tokens for the user
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+  '/auth/tokens/revoke-all/{userid}':
+    delete:
+      tags:
+        - Token Management
+      summary: Revoke all tokens for user
+      description: Revokes all active access and refresh tokens for a user
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: All tokens revoked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: All tokens revoked successfully
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+  /auth/tokens/cleanup:
+    post:
+      tags:
+        - Token Management
+      summary: Cleanup expired tokens
+      description: Removes all expired access and refresh tokens from the database
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Expired tokens cleaned up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expired tokens cleaned up successfully
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1auth~1login/post/responses/401/content/application~1json/schema'
+  '/users/check/username/{username}':
+    get:
+      tags:
+        - Availability
+      summary: Check username availability
+      description: Checks if a username is available for registration
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: Username to check
+          schema:
+            type: string
+            minLength: 3
+      responses:
+        '200':
+          description: Username availability checked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_available:
+                    type: boolean
+                    description: Whether the username is available
+                    example: true
+                  message:
+                    type: string
+                    description: Availability message
+                    example: Username is available
+  '/users/check/email/{email}':
+    get:
+      tags:
+        - Availability
+      summary: Check email availability
+      description: Checks if an email is available for registration
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: Email to check
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Email availability checked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_available:
+                    type: boolean
+                    description: Whether the email is available
+                    example: true
+                  message:
+                    type: string
+                    description: Availability message
+                    example: Email is available
+  /users/check/availability:
+    post:
+      tags:
+        - Availability
+      summary: Check username and email availability
+      description: Checks availability of both username and email in a single request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  description: Username to check availability
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  description: Email to check availability
+                  example: john.doe@example.com
+      responses:
+        '200':
+          description: Availability checked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username_available:
+                    type: boolean
+                    description: Whether the username is available
+                    example: true
+                  username_message:
+                    type: string
+                    description: Username availability message
+                    example: Username is available
+                  email_available:
+                    type: boolean
+                    description: Whether the email is available
+                    example: true
+                  email_message:
+                    type: string
+                    description: Email availability message
+                    example: Email is available
+  /users/create:
+    post:
+      tags:
+        - Users
+      summary: Create a new user with login credentials
+      description: Creates a new user with both persona data and login credentials. Role type must be one of the predefined values.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - full_name
+                - email
+                - username
+                - password
+                - role_type
+              properties:
+                full_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 255
+                  description: User's full name
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  description: User's email address
+                  example: john.doe@example.com
+                phone:
+                  type: string
+                  maxLength: 20
+                  description: User's phone number (optional)
+                  example: '+1234567890'
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                  description: Unique username for login
+                  example: johndoe
+                password:
+                  type: string
+                  minLength: 6
+                  description: User's password
+                  example: securepassword123
+                role_type:
+                  type: string
+                  enum:
+                    - admin
+                    - manager
+                    - agent
+                    - interview
+                    - student
+                    - read
+                  description: Role type for the user
+                  example: admin
+                is_active:
+                  type: boolean
+                  default: true
+                  description: Whether the user account is active
+                  example: true
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: Unique user identifier
+                    example: 550e8400-e29b-41d4-a716-446655440000
+                  full_name:
+                    type: string
+                    description: User's full name
+                    example: John Doe
+                  email:
+                    type: string
+                    format: email
+                    description: User's email address
+                    example: john.doe@example.com
+                  phone:
+                    type: string
+                    description: User's phone number
+                    example: '+1234567890'
+                  username:
+                    type: string
+                    description: User's username
+                    example: johndoe
+                  role_id:
+                    type: string
+                    format: uuid
+                    description: Role ID for the user
+                    example: 550e8400-e29b-41d4-a716-446655440000
+                  role_name:
+                    type: string
+                    description: Role name for the user
+                    example: Admin
+                  is_active:
+                    type: boolean
+                    description: Whether the user account is active
+                    example: true
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: User creation timestamp
+                    example: '2024-01-01T00:00:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: User last update timestamp
+                    example: '2024-01-01T00:00:00Z'
+        '400':
+          description: Bad request - validation error or invalid role type
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '409':
+          description: User with email or username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  /users/getall:
+    get:
+      tags:
+        - Users
+      summary: Get all users with filtering and pagination
+      description: Retrieves a list of users with optional filtering and pagination
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: role_id
+          in: query
+          description: Filter by role ID
+          schema:
+            type: string
+            format: uuid
+        - name: search
+          in: query
+          description: 'Search in full name, email, or username'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 'Number of records to return (default is 50, max is 100)'
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of records to skip
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+                    description: List of users
+                  total_count:
+                    type: integer
+                    description: Total number of users matching the criteria
+                    example: 100
+                  limit:
+                    type: integer
+                    description: Number of records returned
+                    example: 20
+                  offset:
+                    type: integer
+                    description: Number of records skipped
+                    example: 0
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Response status
+                    example: error
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid request data
+                  data:
+                    type: null
+                    description: No data for error responses
+                    example: null
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/getbyid/{userid}':
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieves a user by their unique identifier
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/getbyemail/{email}':
+    get:
+      tags:
+        - Users
+      summary: Get user by email
+      description: Retrieves a user by their email address
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: email
+          in: path
+          required: true
+          description: User email address
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/getbyusername/{username}':
+    get:
+      tags:
+        - Users
+      summary: Get user by username
+      description: Retrieves a user by their username
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: User username
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/update/persona/{userid}':
+    put:
+      tags:
+        - Users
+      summary: Update user persona information
+      description: 'Updates user''s personal information (name, email, phone, role, active status)'
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                  minLength: 2
+                  maxLength: 255
+                  description: User's full name
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                  description: User's email address
+                  example: john.doe@example.com
+                phone:
+                  type: string
+                  maxLength: 20
+                  description: User's phone number
+                  example: '+1234567890'
+                role_id:
+                  type: string
+                  format: uuid
+                  description: Role ID for the user
+                  example: 550e8400-e29b-41d4-a716-446655440000
+                is_active:
+                  type: boolean
+                  description: Whether the user account is active
+                  example: true
+      responses:
+        '200':
+          description: User persona updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/update/login/{userid}':
+    put:
+      tags:
+        - Users
+      summary: Update user login credentials
+      description: 'Updates user''s login credentials (username, password, active status)'
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 100
+                  description: Unique username for login
+                  example: johndoe
+                password:
+                  type: string
+                  minLength: 6
+                  description: User's password (will be hashed)
+                  example: newsecurepassword123
+                is_active:
+                  type: boolean
+                  description: Whether the user login is active
+                  example: true
+      responses:
+        '200':
+          description: User login credentials updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1create/post/responses/201/content/application~1json/schema'
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+  '/users/delete/{userid}':
+    delete:
+      tags:
+        - Users
+      summary: Delete user
+      description: Soft deletes a user (marks as deleted but keeps data)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User deleted successfully
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1users~1getall/get/responses/400/content/application~1json/schema'

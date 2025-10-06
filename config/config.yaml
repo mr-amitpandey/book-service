@@ -1,0 +1,5 @@
+app:
+  name: "book-service"
+  port: "7000"
+  environment: "development"
+  host: "0.0.0.0"
