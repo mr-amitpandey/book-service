@@ -8,17 +8,23 @@ servers:
     description: Local development server
 components:
   schemas:
-    ErrorResponse:
+    BookResponse:
       type: object
       properties:
-        error:
+        id:
           type: string
-          description: Error message
-          example: An error occurred
-        message:
+          format: uuid
+          description: Unique book identifier
+          example: 123e4567-e89b-12d3-a456-426614174000
+        name:
           type: string
-          description: Detailed error message
-          example: Invalid input parameters
+          description: Book name
+          example: Clean Architecture
+        price:
+          type: number
+          format: float
+          description: Book price
+          example: 499.99
     CreateBookRequest:
       type: object
       required:
@@ -30,12 +36,12 @@ components:
           minLength: 2
           maxLength: 100
           description: Book name
-          example: The Great Gatsby
+          example: Clean Architecture
         price:
           type: number
           format: float
           description: Book price
-          example: 29.99
+          example: 499.99
     UpdateBookRequest:
       type: object
       required:
@@ -47,35 +53,127 @@ components:
           minLength: 2
           maxLength: 100
           description: Book name
-          example: The Great Gatsby
+          example: Clean Architecture - Updated
         price:
           type: number
           format: float
           description: Book price
-          example: 29.99
-    BookResponse:
+          example: 549.99
+    ListBooksResponse:
+      type: object
+      properties:
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookResponse'
+          description: List of books
+        total_count:
+          type: integer
+          description: Total number of books matching the criteria
+          example: 42
+        limit:
+          type: integer
+          description: Number of records returned
+          example: 20
+        offset:
+          type: integer
+          description: Number of records skipped
+          example: 0
+    EmployeeResponse:
       type: object
       properties:
         id:
           type: string
           format: uuid
-          description: Book ID
+          description: Unique employee identifier
           example: 123e4567-e89b-12d3-a456-426614174000
         name:
           type: string
-          description: Book name
-          example: The Great Gatsby
-        price:
+          description: Employee name
+          example: john doe
+        salary:
           type: number
           format: float
-          description: Book price
-          example: 29.99
+          description: Employee salary
+          example: 15000
+    CreateEmployeeRequest:
+      type: object
+      required:
+        - name
+        - salary
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Employee name
+          example: john doe
+        salary:
+          type: number
+          format: float
+          description: Employee salary
+          example: 15000
+    UpdateEmployeeRequest:
+      type: object
+      required:
+        - name
+        - salary
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Employee name
+          example: john doe
+        salary:
+          type: number
+          format: float
+          description: Employee salary
+          example: 15000
+    ListEmployeesResponse:
+      type: object
+      properties:
+        books:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeResponse'
+          description: List of employees
+        total_count:
+          type: integer
+          description: Total number of employees matching the criteria
+          example: 42
+        limit:
+          type: integer
+          description: Number of records returned
+          example: 20
+        offset:
+          type: integer
+          description: Number of records skipped
+          example: 0
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: An error occurred
+        message:
+          type: string
+          description: Detailed error message
+          example: Invalid input parameters
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 paths:
   /books/create:
     post:
       tags:
         - Books
       summary: Create a new book
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -101,11 +199,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   '/books/update/{id}':
     put:
       tags:
         - Books
       summary: Update an existing book
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -139,6 +245,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Book not found
           content:
@@ -150,6 +262,8 @@ paths:
       tags:
         - Books
       summary: Delete a book
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -181,17 +295,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Book not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  '/books/getbyid/{id}':
+  '/books/get/{id}':
     get:
       tags:
         - Books
       summary: Get book by ID
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -219,9 +347,216 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Book not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /employees/create:
+    post:
+      tags:
+        - Employees
+      summary: Create a new employee
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+      responses:
+        '201':
+          description: Employee created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/EmployeeResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+                    example: An error occurred
+                  message:
+                    type: string
+                    description: Detailed error message
+                    example: Invalid input parameters
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+  '/employees/update/{id}':
+    put:
+      tags:
+        - Employees
+      summary: Update an existing employee
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Employee ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmployeeRequest'
+      responses:
+        '200':
+          description: Employee updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/EmployeeResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '404':
+          description: Employee not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+  '/employees/delete/{id}':
+    delete:
+      tags:
+        - Employees
+      summary: Delete a employee
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Employee ID
+      responses:
+        '200':
+          description: Employee deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: Employee deleted successfully
+        '400':
+          description: Invalid employee ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+  '/employees/get/{id}':
+    get:
+      tags:
+        - Employees
+      summary: Get employee by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Employee ID
+      responses:
+        '200':
+          description: Employee found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  data:
+                    $ref: '#/components/schemas/EmployeeResponse'
+        '400':
+          description: Bad request - invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'
+        '404':
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1employees~1create/post/responses/400/content/application~1json/schema'

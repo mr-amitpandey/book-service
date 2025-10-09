@@ -10,7 +10,8 @@ type Container struct {
 	db *sql.DB
 
 	// Domain-specific containers
-	BookContainer *BookContainer
+	BookContainer     *BookContainer
+	EmployeeContainer *EmployeeContainer
 }
 
 func NewContainer() *Container {

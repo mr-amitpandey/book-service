@@ -36,8 +36,15 @@ func (r *Routers) Init() {
 		RouterGroup: v1.Group("/books"),
 	}
 
+	// Employee management routes
+	employeeGroup := EmployeeGroup{
+		RouterGroup: v1.Group("/employees"),
+	}
+
 	// Initialize routes
 	bookGroup.Init()
+	employeeGroup.Init()
+
 	defer func() {
 		fmt.Println("Router has been initialized..")
 	}()

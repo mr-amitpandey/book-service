@@ -1,0 +1,195 @@
+create:
+  post:
+    tags:
+      - Employees
+    summary: Create a new employee
+    security:
+      - BearerAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/employees.yaml#/CreateEmployeeRequest'
+    responses:
+      '201':
+        description: Employee created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/employees.yaml#/EmployeeResponse'
+      '400':
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+
+update:
+  put:
+    tags:
+      - Employees
+    summary: Update an existing employee
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Employee ID
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '../schemas/employees.yaml#/UpdateEmployeeRequest'
+    responses:
+      '200':
+        description: Employee updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/employees.yaml#/EmployeeResponse'
+      '400':
+        description: Validation error
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '404':
+        description: Employee not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+
+delete:
+  delete:
+    tags:
+      - Employees
+    summary: Delete a employee
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Employee ID
+    responses:
+      '200':
+        description: Employee deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Employee deleted successfully
+      '400':
+        description: Invalid employee ID
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '403':
+        description: Forbidden
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '404':
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+
+getbyid:
+  get:
+    tags:
+      - Employees
+    summary: Get employee by ID
+    security:
+      - BearerAuth: []
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Employee ID
+    responses:
+      '200':
+        description: Employee found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "OK"
+                data:
+                  $ref: '../schemas/employees.yaml#/EmployeeResponse'
+      '400':
+        description: Bad request - invalid ID
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'
+      '404':
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: '../schemas/employees.yaml#/ErrorResponse'

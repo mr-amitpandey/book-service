@@ -1,0 +1,86 @@
+CreateEmployeeRequest:
+  type: object
+  required:
+    - name
+    - salary
+  properties:
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: Employee name
+      example: "john doe"
+    salary:
+      type: number
+      format: float
+      description: Employee salary
+      example: 15000.00
+
+UpdateEmployeeRequest:
+  type: object
+  required:
+    - name
+    - salary
+  properties:
+    name:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: Employee name
+      example: "john doe"
+    salary:
+      type: number
+      format: float
+      description: Employee salary
+      example: 15000.00
+
+EmployeeResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique employee identifier
+      example: "123e4567-e89b-12d3-a456-426614174000"
+    name:
+      type: string
+      description: Employee name
+      example: "john doe"
+    salary:
+      type: number
+      format: float
+      description: Employee salary
+      example: 15000.00
+
+ListEmployeesResponse:
+  type: object
+  properties:
+    books:
+      type: array
+      items:
+        $ref: '#/EmployeeResponse'
+      description: List of employees
+    total_count:
+      type: integer
+      description: Total number of employees matching the criteria
+      example: 42
+    limit:
+      type: integer
+      description: Number of records returned
+      example: 20
+    offset:
+      type: integer
+      description: Number of records skipped
+      example: 0
+
+ErrorResponse:
+  type: object
+  properties:
+    error:
+      type: string
+      description: Error message
+      example: "An error occurred"
+    message:
+      type: string
+      description: Detailed error message
+      example: "Invalid input parameters"
